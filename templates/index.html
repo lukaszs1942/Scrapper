@@ -17,9 +17,30 @@
       {% for url in urls %}
           <li>
               {{ url.url }}
-              <!-- Delete button -->
+              <!-- Re-scrape button -->
+              <form action="{{ url_for('rescrape', url_id=url.id) }}" method="post">
+              <input type="submit" value="Re-scrape">
+              </form>
+              <!-- Form for deleting the URL -->
               <form action="{{ url_for('delete_url', id=url.id) }}" method="post">
                   <input type="submit" value="Delete">
+              </form>
+
+              <!-- Dropdowns to select versions for comparison -->
+              <form action="{{ url_for('show_diff') }}" method="get">
+                  <select name="id1">
+                      {% for version in url.versions %}
+                          <option value="{{ version.id }}">{{ version.timestamp }}</option>
+                      {% endfor %}
+                  </select>
+
+                  <select name="id2">
+                      {% for version in url.versions %}
+                          <option value="{{ version.id }}">{{ version.timestamp }}</option>
+                      {% endfor %}
+                  </select>
+
+                  <input type="submit" value="Compare">
               </form>
           </li>
       {% endfor %}
