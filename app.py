@@ -9,6 +9,25 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+# Function to initialize the database
+def init_db():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS website_versions (
+            id INTEGER PRIMARY KEY,
+            url TEXT,
+            content TEXT,
+            timestamp DATETIME
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+# Call init_db() to ensure the database and table are created
+init_db()
+
+
 @app.route('/')
 def index():
     conn = get_db_connection()
