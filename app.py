@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for
 import sqlite3
+import difflib
 
 app = Flask(__name__)
 
@@ -46,6 +47,19 @@ def add_url():
         return redirect(url_for('index'))
 
     return render_template('add.html')
+
+@app.route('/diff/<int:id1>/<int:id2>')
+def show_diff(id1, id2):
+    conn = get_db_connection()
+    content1 = conn.execute('SELECT content FROM website_versions WHERE id = ?', (id1,)).fetchone()
+    content2 = conn.execute('SELECT content FROM website_versions WHERE id = ?', (id2,)).fetchone()
+    conn.close()
+
+    if not content1 or not content2:
+        return "One or both of the specified records do not exist."
+
+    diff = difflib.ndiff(content1['content'].splitlines(), content2['content'].splitlines())
+    return render_template('diff.html', diff=diff)
 
 if __name__ == '__main__':
     app.run(debug=True)

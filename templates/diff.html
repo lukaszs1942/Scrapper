@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+<head>
+  <title>Website Content Differences</title>
+</head>
+<body>
+  <h1>Content Differences</h1>
+  <pre>
+    {% for line in diff %}
+      {{ line }}
+    {% endfor %}
+  </pre>
+  <a href="{{ url_for('index') }}">Back to List</a>
+</body>
+</html>

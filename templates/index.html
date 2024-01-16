@@ -7,7 +7,11 @@
   <h1>URL List</h1>
   <ul>
     {% for url in urls %}
-      <li>{{ url.url }}</li>
+      <li>
+        {{ url.url }}
+        <!-- Add a link to compare this version with another -->
+        <a href="{{ url_for('show_diff', id1=url.id, id2=url.id) }}">Compare</a>
+      </li>
     {% endfor %}
   </ul>
   <a href="{{ url_for('add_url') }}">Add a new URL</a>
