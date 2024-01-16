@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+<head>
+  <title>URL List</title>
+</head>
+<body>
+  <h1>URL List</h1>
+  <ul>
+    {% for url in urls %}
+      <li>{{ url.url }}</li>
+    {% endfor %}
+  </ul>
+  <a href="{{ url_for('add_url') }}">Add a new URL</a>
+</body>
+</html>
