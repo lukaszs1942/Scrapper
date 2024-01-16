@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for
 import sqlite3
-import difflib
+import requests
+from bs4 import BeautifulSoup
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -51,15 +53,48 @@ def add_url():
 @app.route('/diff/<int:id1>/<int:id2>')
 def show_diff(id1, id2):
     conn = get_db_connection()
-    content1 = conn.execute('SELECT content FROM website_versions WHERE id = ?', (id1,)).fetchone()
-    content2 = conn.execute('SELECT content FROM website_versions WHERE id = ?', (id2,)).fetchone()
+    row1 = conn.execute('SELECT content FROM website_versions WHERE id = ?', (id1,)).fetchone()
+    row2 = conn.execute('SELECT content FROM website_versions WHERE id = ?', (id2,)).fetchone()
     conn.close()
 
-    if not content1 or not content2:
-        return "One or both of the specified records do not exist."
+    # Check if rows exist and have content
+    if row1 is None or row2 is None or row1['content'] is None or row2['content'] is None:
+        return "One or both of the specified records do not exist or have no content."
 
-    diff = difflib.ndiff(content1['content'].splitlines(), content2['content'].splitlines())
+    # Extract content from the rows
+    content1 = row1['content']
+    content2 = row2['content']
+
+    diff = difflib.ndiff(content1.splitlines(), content2.splitlines())
     return render_template('diff.html', diff=diff)
+
+@app.route('/delete/<int:id>', methods=['POST'])
+def delete_url(id):
+    conn = get_db_connection()
+    conn.execute('DELETE FROM website_versions WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('index'))
+
+
+@app.route('/scrape_and_save', methods=['POST'])
+def scrape_and_save():
+    url_to_scrape = request.form.get('url_to_scrape')
+
+    # Fetch the webpage content
+    response = requests.get(url_to_scrape)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    scraped_content = soup.prettify()
+
+    # Save to database
+    conn = get_db_connection()
+    conn.execute('INSERT INTO website_versions (url, content, timestamp) VALUES (?, ?, ?)', 
+                 (url_to_scrape, scraped_content, datetime.now()))  # Correct usage
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('index'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)
